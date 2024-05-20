@@ -1,0 +1,20 @@
+html, body, #app {height: 100%;border-radius: 0;}
+.el-checkbox__label, .el-form-item__label {color: var(--text-color) !important;}
+.el-form-item__content {flex-direction: column;align-items: flex-start;}
+.el-checkbox__inner {width: 16px;height: 16px;border-radius: 4px;}
+.el-checkbox__inner::after {height: 8px;left: 5px;width: 4px;}
+
+.item-tip {
+	@apply block text-[#a1a1a1] text-wrap leading-6 text-sm;
+}
+.el-select + .item-tip, .el-input-number + .item-tip, .el-input + .item-tip {
+	@apply mt-2;
+}
+
+.btn {
+	@apply px-10 py-0.5 rounded-lg bg-white hover:bg-[#DFDFDF] border border-b-gray-300 text-base outline-none me-5;
+}
+
+.tag {
+	@apply text-gray-600 text-sm font-medium me-2.5 px-2.5 py-0.5 mt-1 rounded-full;
+}

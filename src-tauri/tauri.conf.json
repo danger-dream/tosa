@@ -1,0 +1,64 @@
+{
+	"build": {
+		"beforeBuildCommand": "npm run build",
+		"beforeDevCommand": "npm run dev",
+		"devPath": "http://localhost:8080",
+		"distDir": "../dist"
+	},
+	"package": {
+		"productName": "Tosa",
+		"version": "0.1.0"
+	},
+	"tauri": {
+		"allowlist": {
+			"os": {"all": true},
+			"fs": {"all": true, "scope": ["$APPCONFIG/*", "$APPDATA/*", "$TEMP/*", "$APPLOG/*", "$APPLOCALDATA/*", "$APPCACHE/*"]},
+			"path": {"all": true},
+			"window": {"all": true},
+			"dialog": {"all": true},
+			"clipboard": {"all": true},
+			"notification": {"all": true},
+			"globalShortcut": {"all": true},
+			"shell": {"all": true, "open": ".*"},
+			"http": {"all": true, "request": true, "scope": ["https://**", "http://**"]}
+		},
+		"bundle": {
+			"active": true,
+			"category": "DeveloperTool",
+			"copyright": "© 2022 Danger Dream. All rights reserved.",
+			"identifier": "com.danger-dream.tosa",
+			"longDescription": "",
+			"externalBin": [],
+			"icon": [
+				"icons/32x32.png",
+				"icons/128x128.png",
+				"icons/128x128@2x.png",
+				"icons/icon.icns",
+				"icons/icon.ico"
+			],
+			"resources": [],
+			"shortDescription": "",
+			"targets": "all",
+			"windows": {
+				"certificateThumbprint": null,
+				"digestAlgorithm": "sha256",
+				"timestampUrl": ""
+			}
+		},
+		"security": {
+			"csp": "default-src * data: ; img-src 'self' asset: https://asset.localhost data: ; style-src * 'unsafe-inline'; worker-src 'self' blob: ; script-src * 'unsafe-eval';",
+			"devCsp": "default-src * data: ; img-src 'self' asset: https://asset.localhost data: ; style-src * 'unsafe-inline'; worker-src 'self' blob: ; script-src * 'unsafe-eval';"
+		},
+		"updater": {
+			"active": false
+		},
+		"windows": [
+		
+		],
+		"systemTray": {
+			"iconPath": "icons/icon.png",
+			"iconAsTemplate": true,
+			"menuOnLeftClick": false
+		}
+	}
+}

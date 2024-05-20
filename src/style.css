@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	--text-color: #232323;
+	--bg: #f9f9f9;
+	--placeholder: #ADADAD;
+	--hover: #dedede;
+	--active: #ADADAD;
+	--primary: #007AFF;
+	
+	--bg1: #EAEAEA;
+	--bg2: #F1F1F1;
+	
+	--bg3: #DCDCDC;
+	--bg-box: #EFEFEF;
+	--bc: #ccc;
+	
+	font-family: "PingFang-SC-Regular", "Segoe UI", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", v-sans, system-ui, -apple-system, BlinkMacSystemFont;
+	font-size: 14px;
+	line-height: 22px;
+	color: var(--text-color);
+	background-color: var(--bg);
+}
+
+html, body, #app {
+	padding: 0;
+	margin: 0;
+	background-color: transparent !important;
+	overflow: hidden !important;
+	border-radius: 8px;
+}
+@font-face {
+	font-family: 'PingFang-SC-Regular';
+	src: url(/PingFang-SC-Regular.ttf);
+	font-weight: normal;
+	font-style: normal;
+}
+body {perspective: 800px;-webkit-user-select: none;}
+::-webkit-scrollbar {width: 6px;}
+::-webkit-scrollbar-thumb {background: #0003;border-radius: 10px;cursor: pointer;}
+.hide-scrollbar::-webkit-scrollbar { width: 0 !important; }
+.dark ::-webkit-scrollbar-thumb {background: #FFF3;}

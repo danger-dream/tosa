@@ -1,0 +1,50 @@
+{
+	"name": "tosa",
+	"description": "Translate OCR Selection Autohotkey",
+	"private": true,
+	"version": "0.1.0",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"tauri": "tauri",
+		"tauri:dev": "tauri dev",
+		"tauri:build": "tauri build"
+	},
+	"dependencies": {
+		"tauri-plugin-log-api": "github:tauri-apps/tauri-plugin-log#v1",
+		"tauri-plugin-autostart-api": "github:tauri-apps/tauri-plugin-autostart#v1",
+		"tauri-plugin-context-menu": "0.7.0",
+		"@tauri-apps/api": "1.5.6",
+		"element-plus": "2.7.3",
+		"crypto-js": "4.2.0",
+		"vue": "3.4.27",
+		"uuid": "9.0.1",
+		"animate.css": "4.1.1",
+		"jsonpath-plus": "9.0.0",
+		"ace-builds": "1.33.2",
+		"vue3-ace-editor": "2.2.4",
+		"color": "4.2.3"
+	},
+	"devDependencies": {
+		"@tailwindcss/typography": "0.5.13",
+		"@types/node": "20.12.12",
+		"@types/crypto-js": "4.2.2",
+		"@types/uuid": "9.0.8",
+		"@tauri-apps/cli": "1.5.14",
+		"@vitejs/plugin-vue": "5.0.4",
+		"@vitejs/plugin-vue-jsx": "3.1.0",
+		"vite-plugin-svg-icons": "2.0.1",
+		"prettier": "3.2.5",
+		"postcss": "8.4.38",
+		"tailwindcss": "3.4.3",
+		"autoprefixer": "10.4.19",
+		"sass": "1.77.2",
+		"typescript": "5.4.5",
+		"vite": "5.2.11",
+		"ts-node": "10.9.2",
+		"unplugin-element-plus": "0.8.0"
+	},
+	"main": "src/main.ts",
+	"repository": "git@github.com:danger-dream/tosa.git",
+	"license": "MIT"
+}
