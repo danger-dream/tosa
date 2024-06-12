@@ -84,7 +84,7 @@ export const Baidu: IBaseOcrService = {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 			query: { access_token },
-			body: { detect_direction: 'false', image: img }
+			form: { detect_direction: 'false', image: img }
 		})
 		if (!res.ok) {
 			throw `Http Request Error\nHttp Status: ${ res.status }\n${ JSON.stringify(res.data) }`

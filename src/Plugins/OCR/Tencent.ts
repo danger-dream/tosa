@@ -62,7 +62,6 @@ export const Tencent: IBaseOcrService = {
 			const day = ('0' + date.getUTCDate()).slice(-2)
 			return `${ year }-${ month }-${ day }`
 		}
-
 		const service = 'ocr'
 		const version = '2018-11-19'
 		const timestamp = Math.ceil(Date.now() / 1000)
@@ -76,8 +75,8 @@ export const Tencent: IBaseOcrService = {
 		const httpRequestMethod = 'POST'
 		const canonicalUri = '/'
 		const canonicalQueryString = ''
-		const canonicalHeaders = 'content-type:application/json\n' + 'host:' + endpoint + '\n'
-		const signedHeaders = 'content-type;host'
+		const canonicalHeaders = 'content-type:application/json; charset=utf-8\nhost:' + endpoint + '\nx-tc-action:' + action.toLowerCase() + '\n'
+		const signedHeaders = 'content-type;host;x-tc-action'
 
 		const canonicalRequest =
 			httpRequestMethod +
@@ -106,34 +105,23 @@ export const Tencent: IBaseOcrService = {
 
 		// ************* 步骤 4：拼接 Authorization *************
 		const authorization =
-			algorithm +
-			' ' +
-			'Credential=' +
-			secretId +
-			'/' +
-			credentialScope +
-			', ' +
-			'SignedHeaders=' +
-			signedHeaders +
-			', ' +
-			'Signature=' +
-			signature
+			algorithm + ' ' +
+			'Credential=' + secretId + '/' + credentialScope + ', ' +
+			'SignedHeaders=' + signedHeaders + ', ' +
+			'Signature=' + signature
 
 		let res = await fetch('https://' + endpoint, {
 			method: 'POST',
 			headers: {
 				Authorization: authorization,
-				'content-type': 'application/json',
+				'content-type': 'application/json; charset=utf-8',
 				Host: endpoint,
 				'X-TC-Action': action,
 				'X-TC-Timestamp': timestamp.toString(),
 				'X-TC-Version': version,
 				'X-TC-Region': region
 			},
-			body: {
-				type: 'Text',
-				payload: payload
-			}
+			text: payload
 		})
 		if (!res.ok) {
 			throw `Http Request Error\nHttp Status: ${ res.status }\n${ JSON.stringify(res.data) }`
