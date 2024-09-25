@@ -111,10 +111,10 @@ export const GoogleFree: IBaseTransService = {
 			const result = { text: '', pronunciations: [], explanations: [], sentence: [] } as IDictResult
 			// 词典模式
 			if (data[1]) {
-				result.text = data[0][0][0]
+				result.text = data[0][0][2]
 				// 发音
-				if (data[0][1][3]) {
-					result.pronunciations.push({ symbol: data[0][1][3], voice: '' })
+				if (data[0][0][2]) {
+					result.pronunciations.push({ symbol: data[0][0][3], voice: '' })
 				}
 				// 释义
 				for (let i of data[1]) {

@@ -94,7 +94,7 @@ export const Custom: IBaseOcrService = {
 		}
 		const options: IRequestOptions = {
 			method: reqData.method ? reqData.method.toUpperCase() as any : 'POST',
-			timeout: reqData.timeout || 5000
+			timeout: reqData.timeout || 30000
 		}
 		if (Object.keys(reqData.headers || {}).length) {
 			options.headers = reqData.headers
@@ -117,7 +117,12 @@ export const Custom: IBaseOcrService = {
 			}
 		}
 		options.responseType = 2
-		const res = await fetch(url, options)
+		let res:any
+		try {
+			res = await fetch(url, options)
+		}catch (e){
+			console.log(e)
+		}
 		if (!res.ok) {
 			throw new Error(`Http Request Error\nHttp Status: ${ res.status }\n${ res.data }`)
 		}
@@ -128,7 +133,7 @@ export const Custom: IBaseOcrService = {
 		}
 		let resultJson: any
 		try {
-			resultJson = JSON.parse((res.data + '').replace(/(\r\n|\n|\r)/gm, ''))
+			resultJson = JSON.parse((JSON.stringify(res.data) + '').replace(/(\r\n|\n|\r)/gm, ''))
 		} catch (e) {
 			throw new Error('解析JSON结果错误: ' + e.message)
 		}

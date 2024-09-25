@@ -23,6 +23,8 @@ mod hook;
 
 use log::{debug, info};
 use tauri::Manager;
+use tauri_plugin_autostart::MacosLauncher;
+use tauri_plugin_log::{Target, TargetKind};
 
 fn main() {
     #[cfg(target_os = "windows")]
@@ -43,18 +45,35 @@ fn main() {
         }
     }
     tauri::Builder::default()
-        .plugin(tauri_plugin_context_menu::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(tauri_plugin_window_state::Builder::new().build())
+        .plugin(tauri_plugin_websocket::init())
+        .plugin(tauri_plugin_upload::init())
+        //.plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_store::Builder::new().build())
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_log::Builder::new().build())
+        //.plugin(tauri_plugin_cli::init())
+        .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None))
+        .plugin(tauri_plugin_http::init())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_positioner::init())
         .plugin(tauri_plugin_single_instance::init(|app, _, _cwd| {
-            let win = app.get_window(global::TRANSLATOR_LABEL).unwrap();
+            let win = app.get_webview_window(global::TRANSLATOR_LABEL).unwrap();
             win.show().unwrap();
             win.set_focus().unwrap();
         }))
         .plugin(
             tauri_plugin_log::Builder::default()
                 .targets([
-                    tauri_plugin_log::LogTarget::LogDir,
-                    tauri_plugin_log::LogTarget::Stdout,
+                    Target::new(TargetKind::Stdout),
+                    Target::new(TargetKind::LogDir { file_name: None }),
+                    Target::new(TargetKind::Webview),
                 ])
                 .build(),
         )
@@ -62,17 +81,21 @@ fn main() {
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             Some(vec![]),
         ))
-        .system_tray(tauri::SystemTray::new())
         .setup(|app| {
-            global::APP.get_or_init(|| app.handle());
+            let ahal = app.handle();
+            global::APP.get_or_init(|| ahal.clone());
             let base_path = dirs::config_dir()
                 .unwrap()
-                .join(app.config().tauri.bundle.identifier.clone());
+                .join(app.config().identifier.clone());
             global::BASE_PATH.get_or_init(|| base_path);
 
             info!("init config store");
             config::init_config();
-
+            #[cfg(all(desktop))]
+            {
+                let handle = app.handle();
+                tray::generate_tray(handle)?;
+            }
             #[cfg(target_os = "windows")]
             {
                 if !config::is_first_run() && config::get_or_bool("enable_ahk", false) {
@@ -82,12 +105,12 @@ fn main() {
                     });
                 }
             }
-            tray::generate_tray(app.app_handle());
+            //tray::generate_tray(app.app_handle());
             hotkey::init_hotkey();
 
             std::thread::spawn(move || {
                 window::create_trans_window();
-                 window::create_screenshot_window();
+                window::create_screenshot_window();
                 //window::create_mini_trans_window();
                 //window::show_mini_trans_window();
 
@@ -118,7 +141,7 @@ fn main() {
             hook::selection_stop,
             hook::selection_state,
         ])
-        .on_system_tray_event(event_handle::tray_event_handler)
+        //.on_system_tray_event(event_handle::tray_event_handler)
         .build(tauri::generate_context!())
         .expect("error while running application")
         .run(|app, event| match event {
@@ -151,7 +174,7 @@ fn main() {
                 }
                 #[cfg(not(target_os = "macos"))]
                 {
-                    let window = app.get_window(label.as_str()).unwrap();
+                    let window = app.get_webview_window(label.as_str()).unwrap();
                     window.hide().unwrap();
                 }
                 api.prevent_close();

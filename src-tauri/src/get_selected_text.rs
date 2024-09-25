@@ -28,7 +28,7 @@ fn get_selected_text_by_automation() -> Result<String, Box<dyn std::error::Error
         UIA_TextChildPatternId, UIA_TextPatternId,
     };
     unsafe {
-        CoInitialize(None)?;
+        CoInitialize(None).0;
         let auto: IUIAutomation = CoCreateInstance(&CUIAutomation, None, CLSCTX_ALL)?;
         let tree_walker = auto.RawViewWalker()?;
         let mut focused_element = auto.GetFocusedElement()?;

@@ -2,20 +2,22 @@ use crate::{config::get_or_string, global::*};
 use log::debug;
 use mouse_position::mouse_position::Mouse;
 use tauri::{
-    api::dialog, Manager, PhysicalPosition, PhysicalSize, Window, WindowBuilder, WindowUrl,
+    Emitter, Manager, PhysicalPosition, PhysicalSize, WebviewUrl, WebviewWindow,
+    WebviewWindowBuilder, Window,
 };
+use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_positioner::{Position, WindowExt};
 use window_shadows::set_shadow;
 
 pub fn message_box(title: &str, message: &str) {
     if let Some(w) = get_window(TRANSLATOR_LABEL) {
-        dialog::message(Some(&w), title, message);
+        w.dialog().message(message).title(title);
     }
 }
 
-pub fn get_window(label: &str) -> Option<Window> {
+pub fn get_window(label: &str) -> Option<WebviewWindow> {
     if let Some(app) = APP.get() {
-        app.get_window(label)
+        app.get_webview_window(label)
     } else {
         None
     }
@@ -23,13 +25,14 @@ pub fn get_window(label: &str) -> Option<Window> {
 
 pub fn emit_to<S: serde::Serialize + Clone>(label: &str, event: &str, payload: S) {
     if let Some(app) = APP.get() {
-        let _ = app.emit_to(label, event, payload);
+        let _ = app.emit_to(label, event, payload).expect("emit_to错误");
+        //let _ = app.emit_to(label, event, payload);
     }
 }
 
 pub fn emit_win<S: serde::Serialize + Clone>(win: Window, event: &str, payload: S) {
     if let Some(app) = APP.get() {
-        app.windows().iter().for_each(|(label, _w)| {
+        app.webview_windows().iter().for_each(|(label, _w)| {
             if label != win.label() {
                 let _ = app.emit_to(label, event, payload.clone());
             }
@@ -37,7 +40,7 @@ pub fn emit_win<S: serde::Serialize + Clone>(win: Window, event: &str, payload: 
     }
 }
 
-pub fn create_window(label: &str) -> Window {
+pub fn create_window(label: &str) -> WebviewWindow {
     match get_window(label) {
         Some(w) => {
             debug!("window {} exist, skip create", label);
@@ -46,12 +49,13 @@ pub fn create_window(label: &str) -> Window {
         None => {
             let app_handle = APP.get().unwrap();
             let builder =
-                WindowBuilder::new(app_handle, label, WindowUrl::App("index.html".into()))
+                WebviewWindowBuilder::new(app_handle, label, WebviewUrl::App("index.html".into()))
                     .focused(true)
                     .visible(false)
                     .transparent(true)
                     .decorations(false)
                     .skip_taskbar(true)
+                    .shadow(false)
                     .resizable(false);
             builder.build().unwrap()
         }
@@ -136,7 +140,7 @@ pub fn create_setting_window() {
     ))
     .unwrap();
     win.move_window(Position::Center).unwrap();
-    set_shadow(&win, true).unwrap();
+    win.set_shadow(true).unwrap();
     win.show().unwrap();
     win.set_focus().unwrap();
     debug!("create setting window succes");
@@ -157,7 +161,9 @@ pub fn show_setting_window() {
     }
 }
 
-pub fn create_screenshot_window() -> Window {
+pub fn create_screenshot_window() -> WebviewWindow {
     debug!("create screenshot window");
-    create_window(SCREEN_CAPTURE_LABEL)
+    let window = create_window(SCREEN_CAPTURE_LABEL);
+    window.hide().unwrap();
+    window
 }

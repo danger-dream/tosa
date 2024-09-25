@@ -5,7 +5,14 @@ use base64::{engine::general_purpose, Engine as _};
 use log::debug;
 use mouse_position::mouse_position::Mouse;
 use screenshots::{Compression, Screen};
-use tauri::{AppHandle, SystemTrayEvent};
+use tauri::menu::MenuEvent;
+use tauri::tray::TrayIcon;
+use tauri::AppHandle;
+use tauri::{
+    menu::{Menu, MenuItem},
+    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
+    Manager, Runtime,
+};
 
 fn handlle_hotkey_name_event(name: &str) {
     debug!("hotkey event: {}", name);
@@ -87,21 +94,18 @@ pub fn get_image_base64() -> Result<String, ()> {
     Ok(base64)
 }
 
-pub fn tray_event_handler(app: &AppHandle, event: SystemTrayEvent) {
+pub fn tray_event_tray_handler<R: Runtime>(app: &TrayIcon<R>, event: TrayIconEvent) {
     match event {
-        SystemTrayEvent::DoubleClick {
-            position: _,
-            size: _,
-            ..
-        } => {
+        TrayIconEvent::DoubleClick { position: _, .. } => {
             show_trans_win(true);
         }
-        SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
+        TrayIconEvent::Click { id, .. } => match id.0.as_str() {
             "setting" => {
                 show_setting_window();
             }
             "relaunch" => {
-                app.restart();
+                app.app_handle().restart();
+                //app.restart();
             }
             "quit" => {
                 std::process::exit(0);
@@ -113,7 +117,23 @@ pub fn tray_event_handler(app: &AppHandle, event: SystemTrayEvent) {
         _ => {}
     }
 }
-
+pub fn tray_event_menu_handler<R: Runtime>(app: &AppHandle<R>, event: MenuEvent) {
+    match event.id.as_ref() {
+        "setting" => {
+            show_setting_window();
+        }
+        "relaunch" => {
+            app.app_handle().restart();
+            //app.restart();
+        }
+        "quit" => {
+            std::process::exit(0);
+        }
+        name => {
+            handlle_hotkey_name_event(name);
+        }
+    }
+}
 pub fn handle_hotkey(name: String, key: String) {
     debug!("hotkey {} callback", key.clone());
     handlle_hotkey_name_event(name.as_str());

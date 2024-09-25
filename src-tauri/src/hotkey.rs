@@ -1,11 +1,11 @@
 use crate::{config::get_or_string, event_handle, global::*};
 use log::debug;
-use tauri::GlobalShortcutManager;
+use tauri_plugin_global_shortcut::GlobalShortcutExt;
 
 pub fn init_hotkey() {
     let app_handle = APP.get().unwrap();
 
-    let mut shortcut_manager = app_handle.global_shortcut_manager();
+    let mut shortcut_manager = app_handle.global_shortcut();
     // clear all hotkeys
     shortcut_manager.unregister_all().unwrap();
 
@@ -23,9 +23,7 @@ pub fn init_hotkey() {
             continue;
         }
         let key_clone = key.clone();
-        let res = shortcut_manager.register(key.as_str(), move || {
-            event_handle::handle_hotkey(config_prop.to_string(), key_clone.clone());
-        });
+        let res = shortcut_manager.register(key.as_str());
         let register_ok = res.is_ok();
         debug!("register global hotkey {} {}", key, register_ok);
     }

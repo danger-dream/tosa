@@ -6,11 +6,21 @@ import {
 	IResponse,
 	UnlistenFn
 } from './BaseBackground.ts'
-import { event as TauriEvent, fs, path as TauriPath, dialog, clipboard, globalShortcut, shell, invoke, http } from '@tauri-apps/api'
-import { appWindow, currentMonitor, PhysicalSize, PhysicalPosition } from '@tauri-apps/api/window'
-import * as autostart from 'tauri-plugin-autostart-api'
+import { event as TauriEvent,  path as TauriPath} from '@tauri-apps/api'
+import { Resource, invoke } from '@tauri-apps/api/core';
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
+import { currentMonitor,PhysicalSize,PhysicalPosition } from '@tauri-apps/api/window';
+import { enable, isEnabled, disable } from "@tauri-apps/plugin-autostart";
 import { showMenu } from 'tauri-plugin-context-menu'
-import * as LogApi from 'tauri-plugin-log-api'
+import { trace, info, error, attachConsole,warn,debug } from "@tauri-apps/plugin-log";
+import * as fs from "@tauri-apps/plugin-fs"
+import * as dialog from "@tauri-apps/plugin-dialog"
+import { writeText, readText } from "@tauri-apps/plugin-clipboard-manager"
+import * as globalShortcut from "@tauri-apps/plugin-global-shortcut"
+import * as shell from "@tauri-apps/plugin-shell"
+import {fetch} from "@tauri-apps/plugin-http"
+import {appConfigDir} from "@tauri-apps/api/path";
+const appWindow = getCurrentWebviewWindow()
 
 
 export class Tauri extends BaseBackground {
@@ -19,23 +29,23 @@ export class Tauri extends BaseBackground {
 	scaleFactor = 1.0
 	Logger = {
 		error(message: string, ...args: any) {
-			LogApi.error(handlerLoggerMsg(message, args)).catch(() => {})
+			error(handlerLoggerMsg(message, args)).catch(() => {})
 		},
 		warn(message: string, ...args: any) {
-			LogApi.warn(handlerLoggerMsg(message, args)).catch(() => {})
+			warn(handlerLoggerMsg(message, args)).catch(() => {})
 		},
 		info(message: string, ...args: any) {
-			LogApi.info(handlerLoggerMsg(message, args)).catch(() => {})
+			info(handlerLoggerMsg(message, args)).catch(() => {})
 		},
 		debug(message: string, ...args: any) {
-			LogApi.debug(handlerLoggerMsg(message, args)).catch(() => {})
+			debug(handlerLoggerMsg(message, args)).catch(() => {})
 		}
 	}
 
 	event = {
 		on<T>(name: string, handler: (payload: T, windowLabel: string) => void) {
 			return TauriEvent.listen(name, function(e) {
-				handler(e.payload as any, e.windowLabel)
+				handler(e.payload as any, name)//e.windowLabel
 			}) as Promise<UnlistenFn>
 		},
 		emit(name: string, ...args: any) {
@@ -43,7 +53,7 @@ export class Tauri extends BaseBackground {
 		},
 		once<T>(name: string, handler: (payload: T, windowLabel: string) => void) {
 			return TauriEvent.once(name, function(e){
-				handler(e.payload as any, e.windowLabel)
+				handler(e.payload as any, name)//e.windowLabel
 			}) as Promise<UnlistenFn>
 		}
 	}
@@ -72,7 +82,8 @@ export class Tauri extends BaseBackground {
 	}
 
 	async setPosition(x: number, y: number) {
-		await appWindow.setPosition(new PhysicalPosition(x * this.scaleFactor, y * this.scaleFactor)).catch(() => {})
+		//await appWindow.setPosition(new PhysicalPosition(x * this.scaleFactor, y * this.scaleFactor)).catch(() => {})
+		await appWindow.setPosition(new PhysicalPosition(Math.floor(x), Math.floor(y))).catch(() => {})
 	}
 
 	async getSize(): Promise<{ width: number; height: number }> {
@@ -81,7 +92,7 @@ export class Tauri extends BaseBackground {
 	}
 
 	async setSize(width: number, height: number) {
-		await appWindow.setSize(new PhysicalSize(width * this.scaleFactor, height * this.scaleFactor))
+		await appWindow.setSize(new PhysicalSize(Math.floor(width), Math.floor(height * this.scaleFactor)))
 	}
 
 	async isFocused() {
@@ -117,14 +128,14 @@ export class Tauri extends BaseBackground {
 	}
 
 	async readClipboardText() {
-		return await clipboard.readText()
+		return await readText()
 	}
 
 	async writeClipboardText(content: string) {
 		try {
-			await clipboard.writeText(content)
+			await writeText(content)
 			return true
-		} catch {
+		} catch (e){
 			return false
 		}
 	}
@@ -164,7 +175,7 @@ export class Tauri extends BaseBackground {
 
 	async removeFile(path: string) {
 		try {
-			await fs.removeFile(path)
+			await fs.remove(path)
 			return true
 		} catch {
 			return false
@@ -173,7 +184,7 @@ export class Tauri extends BaseBackground {
 
 	async readDir(path: string, recursive: boolean = false) {
 		try {
-			return (await fs.readDir(path, { recursive })).map((item) => item.path)
+			return (await fs.readDir(path)).map((item) => item.name)
 		} catch {
 			return []
 		}
@@ -181,7 +192,7 @@ export class Tauri extends BaseBackground {
 
 	async createDir(path: string, recursive: boolean = false) {
 		try {
-			await fs.createDir(path, { recursive })
+			await fs.create(path)
 			return true
 		} catch {
 			return false
@@ -190,7 +201,7 @@ export class Tauri extends BaseBackground {
 
 	async removeDir(path: string, recursive: boolean = false) {
 		try {
-			await fs.removeDir(path, { recursive })
+			await fs.remove(path)
 			return true
 		} catch {
 			return false
@@ -231,7 +242,7 @@ export class Tauri extends BaseBackground {
 		})
 	}
 
-	async fetch<T>(url: string, options?: IRequestOptions): Promise<IResponse<T>> {
+	async fetch<T>(url: string, options?: IRequestOptions): Promise<IResponse<any>> {
 		let reqData: {
 			method?: string,
 			headers?: Record<string, string>,
@@ -247,38 +258,49 @@ export class Tauri extends BaseBackground {
 		}
 		if (options.query && Object.keys(options.query).length > 0) {
 			reqData.query = options.query || {}
+			url += "?"
+			for (const item in reqData.query){
+				url += "&"+item + "="+reqData.query[item]
+			}
 		}
 		if (options.text) {
-			reqData.body = http.Body.text(options.text)
+			reqData.body = options.text//http.Body.text(options.text)
 		}
 		if (options.form) {
-			reqData.body = http.Body.form(options.form)
+			reqData.body = options.form//http.Body.form(options.form)
 		}
 		if (options.body) {
-			reqData.body = http.Body.json(options.body)
+			reqData.body = JSON.stringify(options.body)//http.Body.json(options.body)
 		}
 		if (options.responseType !== undefined) {
 			reqData.responseType = options.responseType
 		}
 		reqData.timeout = options.timeout || 5000
+		//const res = await fetch(url, reqData as any)
+		/*let headers = new Headers()
+		headers.append("Content-Type","application/json")*/
 
-		const res = await http.fetch<T>(url, reqData as any)
+		let rqet = new Request(url,reqData);
+		const res = await fetch(rqet)
 		return {
 			ok: res.ok,
 			status: res.status,
-			data: res.data
+			data: await res.json()
 		}
 	}
 
 	async isAutostart(): Promise<boolean> {
-		return await autostart.isEnabled()
+		return await isEnabled()
+		//return await autostart.isEnabled()
 	}
 
 	async setAutostart(enabled: boolean): Promise<void> {
 		if (enabled) {
-			await autostart.enable()
+			await enable()
+			//await autostart.enable()
 		} else {
-			await autostart.disable()
+			await disable()
+			//await autostart.disable()
 		}
 	}
 }

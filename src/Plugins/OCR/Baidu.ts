@@ -1,6 +1,7 @@
 import { fetch } from '../../Background'
 import { MD5 } from 'crypto-js'
 import { IBaseOcrService } from '../../types'
+import {debug} from "@tauri-apps/plugin-log";
 
 interface IToken {
 	token: string

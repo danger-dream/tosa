@@ -117,7 +117,7 @@ function textConvertTimeout(
 		service.ui,
 		JSON.parse(JSON.stringify(config.params))
 	)
-	const time = config.timeout || 30 * 1000;
+	const time = config.timeout || 10 * 1000;
 	return new Promise((resolve, reject) => {
 		let isEnd = false
 		let timeout: any

@@ -20,7 +20,7 @@ initBackground().then(async () => {
 		} else if (label === 'selection-translator') {
 			app_templ = await import('./SelectionTranslator/App.vue')
 		} else if (label === 'mini') {
-			app_templ = await import('./MiniTranslator/App.vue')
+			//app_templ = await import('./MiniTranslator/App.vue')
 		}
 		const app = createApp(app_templ.default)
 		app.component('SvgIcon', SvgIcon)

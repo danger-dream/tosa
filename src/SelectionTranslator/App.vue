@@ -91,6 +91,7 @@ function invokeAction(item: IBaseSelectionTranslator) {
 	item.Invoke(state.selectedText)
 	hideWin()
 }
+hideWin()
 
 </script>
 
