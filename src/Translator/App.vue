@@ -24,7 +24,6 @@ function checkScrollHeight() {
 
 store.checkScrollHeight = checkScrollHeight
 </script>
-
 <template>
 	<div class="flex flex-col p-[1px] bg-[#ccc] rounded-lg" style="width: calc(100% - 1px)">
 		<div class="flex flex-col bg-[var(--bg)] rounded-lg">
