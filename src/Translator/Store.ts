@@ -314,7 +314,7 @@ class Store {
 		}
 		// 处理超过屏幕高度的情况.....
 		height += 1
-		await setSize(curSize.width, Math.floor(height))
+		await setSize(Math.floor(curSize.width), Math.floor(height))
 		await setFocus()
 		this.checkScrollHeight && this.checkScrollHeight()
 	}

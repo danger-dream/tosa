@@ -72,7 +72,7 @@ export function getPosition() {
 }
 
 export function setPosition(x: number, y: number) {
-	return base.setPosition(x, y)
+	return base.setPosition(Math.floor(x), Math.floor(y))
 }
 
 export function getSize() {
@@ -80,7 +80,7 @@ export function getSize() {
 }
 
 export function setSize(width: number, height: number) {
-	return base.setSize(width, height)
+	return base.setSize(Math.floor(width), Math.floor(height))
 }
 
 export function isFocused() {
